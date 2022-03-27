@@ -1,0 +1,8 @@
+{
+    "main": "main.js",
+    "dependencies": {
+        "@notionhq/client": "^1.0.4",
+        "sqlite3": "^5.0.2"
+    },
+    "type": "module"
+}
