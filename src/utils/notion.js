@@ -6,14 +6,46 @@ class NotionUtil {
     static initial(notionToken) {
         if (!NotionUtil.notion) {
             NotionUtil.notion = new Client({ auth: notionToken })
+
+            NotionUtil.blocks = {
+                children: {
+                    list: async (...args) => {
+                        return await NotionUtil.retry(async () => { return await NotionUtil.notion.blocks.children.list(...args) })
+                    }
+                }
+            }
         }
+    }
+
+    static async retry(fn, ...params) {
+        const time = 500
+        const number = 5
+        for (let i = 0; i < number; i++) {
+            try {
+                return await fn(...params)
+            }
+            catch (error) {
+                if (i == number - 1) {
+                    console.info(`The function fails ${number} times, stop trying!`)
+                    throw error
+                }
+
+                console.info(`The function fails ${i + 1} times, try again after ${time}ms`)
+                await new Promise(r => setTimeout(r, time));
+            }
+
+        }
+    }
+
+    static async search(...args) {
+        return await NotionUtil.retry(async () => { return await NotionUtil.notion.search(...args) })
     }
 
     static async listTopPages() {
         let results = []
         let start_cursor = undefined
         while (true) {
-            const response = await NotionUtil.notion.search({
+            const response = await NotionUtil.search({
                 start_cursor,
                 query: '',
                 sort: {

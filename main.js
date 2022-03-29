@@ -24,11 +24,5 @@ NotionUtil.listTopPages().then(results => {
     results.forEach(page => {
         console.info(page)
         dumper.dumpBlocks(page.id)
-
-        // (async () => {
-        //     const pageId = page.id
-        //     const response = await notion.pages.retrieve({ page_id: pageId })
-        //     console.log(response)
-        // })();
     })
 })
