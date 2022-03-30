@@ -10,7 +10,8 @@ class NotionUtil {
             NotionUtil.blocks = {
                 children: {
                     list: async (...args) => {
-                        return await NotionUtil.retry(async () => { return await NotionUtil.notion.blocks.children.list(...args) })
+                        return await NotionUtil.retry.call(NotionUtil.notion, NotionUtil.notion.blocks.children.list, ...args)
+                        // return await NotionUtil.retry(() => NotionUtil.notion.blocks.children.list(...args))
                     }
                 }
             }
@@ -22,15 +23,15 @@ class NotionUtil {
         const number = 5
         for (let i = 0; i < number; i++) {
             try {
-                return await fn(...params)
+                return await fn.call(this, ...params) // 'this' can be passed in through retry.call and passed to fn
             }
             catch (error) {
                 if (i == number - 1) {
-                    console.info(`The function fails ${number} times, stop trying!`)
+                    console.info(`The ${fn.name} function fails ${number} times, stop trying!`)
                     throw error
                 }
 
-                console.info(`The function fails ${i + 1} times, try again after ${time}ms`)
+                console.info(`The ${fn.name} function fails ${i + 1} times, try again after ${time}ms`)
                 await new Promise(r => setTimeout(r, time));
             }
 
@@ -38,7 +39,8 @@ class NotionUtil {
     }
 
     static async search(...args) {
-        return await NotionUtil.retry(async () => { return await NotionUtil.notion.search(...args) })
+        return await NotionUtil.retry.call(NotionUtil.notion, NotionUtil.notion.search, ...args)
+        // return await NotionUtil.retry(() => NotionUtil.notion.search(...args))
     }
 
     static async listTopPages() {

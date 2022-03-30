@@ -23,6 +23,6 @@ switch (process.env.DUMP_TYPE) {
 NotionUtil.listTopPages().then(results => {
     results.forEach(page => {
         console.info(page)
-        dumper.dumpBlocks(page.id)
+        dumper.dumpBlock(page)
     })
 })

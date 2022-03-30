@@ -20,24 +20,41 @@ class JsonDumper {
         })
     }
 
-    async dumpBlocks(id) {
+    async dumpBlocks(block, parent) {
         const response = await NotionUtil.blocks.children.list({
-            block_id: id,
+            block_id: block.id,
             page_size: 0,
         })
-        // console.log(response)
-        response.results.forEach(block => { this.dumpBlock(block) })
+
+        // Treat the first `page` or `child_page` of the upper layer as parent
+        parent = block.type == 'child_page' || block.object == 'page' ? block : parent
+        response.results.forEach(b => this.dumpBlock(b, parent))
         return response.results
     }
 
-    async dumpBlock(block) {
+    async dumpBlock(block, parent) {
         // console.info(block.id)
         // console.info(block.last_edited_time)
         // console.info(block.has_children)
         // console.info(block.object)
+        let parentPageDir = ''
 
-        if (block.has_children) {
-            let results = await this.dumpBlocks(block.id)
+        // If parent is a page, join dir of it to object path
+        if (parent && (parent.type == 'child_page' || parent.object == 'page')) {
+            let time = new Date(parent.last_edited_time).getTime()
+            parentPageDir = `${parent.id}_${time}`
+            let parentPagePath = path.join(this.folder, 'blocks', parentPageDir)
+            if (!fs.existsSync(parentPagePath)) {
+                fs.mkdirSync(parentPagePath)
+            }
+        }
+        let time = new Date(block.last_edited_time).getTime()
+        let blockFilePath = path.join(this.folder, 'blocks', parentPageDir, `${block.id}_${time}.json`)
+        if (fs.existsSync(blockFilePath))
+            return
+
+        if (block.has_children || block.object == 'page') {
+            let results = await this.dumpBlocks(block, parent)
             block.childrens = results.map(block => { return block.id })
         }
 
@@ -107,8 +124,7 @@ class JsonDumper {
                 break
 
         }
-
-        fs.writeFileSync(path.join(this.folder, 'blocks', block.id + '.json'), JSON.stringify(block))
+        fs.writeFileSync(blockFilePath, JSON.stringify(block))
 
     }
 
