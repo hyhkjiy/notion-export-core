@@ -3,7 +3,7 @@ import { Client } from '@notionhq/client'
 
 class NotionUtil {
 
-    static initial(notionToken) {
+    static initialze(notionToken) {
         if (!NotionUtil.notion) {
             NotionUtil.notion = new Client({ auth: notionToken })
 
@@ -32,7 +32,7 @@ class NotionUtil {
                 }
 
                 console.info(`The ${fn.name} function fails ${i + 1} times, try again after ${time}ms`)
-                await new Promise(r => setTimeout(r, time));
+                await new Promise(r => setTimeout(r, time))
             }
 
         }

@@ -1,10 +1,10 @@
 import fs from 'fs'
 import path from 'path'
 import NotionUtil from './utils/notion.js'
+import Storage from './utils/storage.js'
 
 
 const subdirs = [
-    'blocks',
     'files'
 ]
 
@@ -33,32 +33,16 @@ class JsonDumper {
     }
 
     async dumpBlock(block, parent) {
-        // console.info(block.id)
-        // console.info(block.last_edited_time)
-        // console.info(block.has_children)
-        // console.info(block.object)
-        let parentPageDir = ''
+        let block_key = (block.object == 'page' ? 'p_' : 'b_') + block.id
 
-        // If parent is a page, join dir of it to object path
-        if (parent && (parent.type == 'child_page' || parent.object == 'page')) {
-            let time = new Date(parent.last_edited_time).getTime()
-            parentPageDir = `${parent.id}_${time}`
-            let parentPagePath = path.join(this.folder, 'blocks', parentPageDir)
-            if (!fs.existsSync(parentPagePath)) {
-                fs.mkdirSync(parentPagePath)
-            }
-        }
-        let time = new Date(block.last_edited_time).getTime()
-        let blockFilePath = path.join(this.folder, 'blocks', parentPageDir, `${block.id}_${time}.json`)
-        if (fs.existsSync(blockFilePath))
+        let historyBlock = await Storage.get(block_key)
+        if (historyBlock && historyBlock.value.last_edited_time == block.last_edited_time)
             return
 
         if (block.has_children || block.object == 'page') {
             let results = await this.dumpBlocks(block, parent)
-            block.childrens = results.map(block => { return block.id })
+            block.childrens = results.map(b => { return b.id })
         }
-
-        // console.info(block.id, JSON.stringify(block))
 
         switch (block.type) {
             case "paragraph":
@@ -124,7 +108,11 @@ class JsonDumper {
                 break
 
         }
-        fs.writeFileSync(blockFilePath, JSON.stringify(block))
+
+        Storage.put(block_key, block).catch(err => {
+            console.error(err)
+            throw err
+        })
 
     }
 
