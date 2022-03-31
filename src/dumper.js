@@ -1,5 +1,6 @@
 import fs from 'fs'
 import path from 'path'
+import request from 'request'
 import NotionUtil from './utils/notion.js'
 import Storage from './utils/storage.js'
 
@@ -9,7 +10,7 @@ const subdirs = [
 ]
 
 
-class JsonDumper {
+class Dumper {
     constructor(folder) {
         this.folder = folder
         subdirs.forEach(dir => {
@@ -18,6 +19,32 @@ class JsonDumper {
                 fs.mkdirSync(dir)
             }
         })
+    }
+
+    dumpFile(url) {
+        let reg = new RegExp(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i)
+        let fileId = url.match(reg)[0]
+        if (!fileId) {
+            console.error('Invalid file url', url)
+            return null
+        }
+
+        let fileNameWithoutQuery = url.split('?')[0]
+        let fileName = fileNameWithoutQuery.split('/').pop()
+
+        let fileFolderPath = path.join(this.folder, 'files', fileId)
+        let filePath = path.join(fileFolderPath, fileName)
+
+        if (fs.existsSync(filePath))
+            fs.unlinkSync(filePath)
+
+        if (!fs.existsSync(fileFolderPath))
+            fs.mkdirSync(fileFolderPath)
+
+
+        request.get(url).pipe(fs.createWriteStream(filePath))
+
+        return path.join('files', fileId, fileName)
     }
 
     async dumpBlocks(block, parent) {
@@ -33,7 +60,7 @@ class JsonDumper {
     }
 
     async dumpBlock(block, parent) {
-        let block_key = (block.object == 'page' ? 'p_' : 'b_') + block.id
+        let block_key = (block.object == 'page' ? 'p/' : 'b/') + block.id
 
         let historyBlock = await Storage.get(block_key)
         if (historyBlock && historyBlock.value.last_edited_time == block.last_edited_time)
@@ -41,70 +68,80 @@ class JsonDumper {
 
         if (block.has_children || block.object == 'page') {
             let results = await this.dumpBlocks(block, parent)
-            block.childrens = results.map(b => { return b.id })
+            block.childrens = results.map(b => {
+                return b.id
+            })
         }
 
         switch (block.type) {
-            case "paragraph":
+            case 'paragraph':
                 break
-            case "heading_1":
+            case 'heading_1':
                 break
-            case "heading_2":
+            case 'heading_2':
                 break
-            case "heading_3":
+            case 'heading_3':
                 break
-            case "bulleted_list_item": // 无序列表项
+            case 'bulleted_list_item': // 无序列表项
                 break
-            case "numbered_list_item": // 有序列表项
+            case 'numbered_list_item': // 有序列表项
                 break
-            case "to_do":  // to do列表
+            case 'to_do': // to do列表
                 break
-            case "toggle":
+            case 'toggle':
                 break
-            case "child_page":
+            case 'child_page':
                 break
-            case "child_database":
+            case 'child_database':
                 break
-            case "embed":
+            case 'embed':
                 break
-            case "image":
+            case 'image':
+                block.image.file.path = this.dumpFile(block.image.file.url)
                 break
-            case "video":
+            case 'video':
+                block.video.file.path = this.dumpFile(block.video.file.url)
                 break
-            case "file":
-                // block.file.file.url // "https://s3.us-west-2.amazonaws.com/secure.notion-static.com/2d81b4f2-9b7c-4112-b52e-dc79144ef10b/README.md?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45EIPT3X45%2F20220329%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20220329T143018Z&X-Amz-Expires=3600&X-Amz-Signature=ec38ac57b60be8d435fc976751b1b7bfcc03132a29cf87426d66659ef011e37b&X-Amz-SignedHeaders=host&x-id=GetObject"
+            case 'file':
+                block.file.file.path = this.dumpFile(block.file.file.url)
                 break
-            case "pdf":
+            case 'pdf':
                 break
-            case "bookmark":
+            case 'bookmark':
                 break
-            case "callout":
+            case 'callout':
                 break
-            case "quote":
+            case 'quote':
                 break
-            case "equation":
+            case 'equation':
                 break
-            case "divider":
+            case 'divider':
                 break
-            case "table_of_contents":
+            case 'table_of_contents':
                 break
-            case "column":
+            case 'column':
                 break
-            case "column_list":
+            case 'column_list':
                 break
-            case "link_preview":
+            case 'link_preview':
                 break
-            case "synced_block":
+            case 'synced_block':
                 break
-            case "template":
+            case 'template':
                 break
-            case "link_to_page":
+            case 'link_to_page':
                 break
-            case "table":
+            case 'table':
                 break
-            case "table_row":
+            case 'table_row':
                 break
-            case "unsupported":
+            case 'code':
+                break
+            case 'unsupported':
+            default:
+                if (block.object != 'page') {
+                    console.error('Unsupported block type', block.type)
+                }
                 break
 
         }
@@ -118,4 +155,4 @@ class JsonDumper {
 
 }
 
-export default JsonDumper
+export default Dumper

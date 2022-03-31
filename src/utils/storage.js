@@ -5,9 +5,6 @@ class Storage {
 
     static initialze() {
         Storage.filePath = path.join(process.env.EXPORT_FOLDER, process.env.STORE_FILE)
-        // if (!fs.existsSync(Storage.filePath))
-        //     fs.writeFileSync(Storage.filePath, '')
-
         Storage.db = hypertrie(Storage.filePath, { valueEncoding: 'json' })
     }
 
