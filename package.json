@@ -2,7 +2,7 @@
     "main": "main.js",
     "dependencies": {
         "@notionhq/client": "^1.0.4",
-        "hypertrie": "^5.1.3"
-    },
-    "type": "module"
+        "hypertrie": "^5.1.3",
+        "dugite": "^1.104.0"
+    }
 }

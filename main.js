@@ -3,11 +3,15 @@ import Dumper from './src/dumper.js'
 import NotionUtil from './src/utils/notion.js'
 import Storage from './src/utils/storage.js'
 import fs from 'fs'
+import path from 'path'
 
 dotenv.config()
 const folder = process.env.EXPORT_FOLDER
 
-if(!fs.existsSync(folder)) 
+global.repositoryName = 'notion-export'
+global.repositoryPath = path.join(folder, global.repositoryName)
+
+if (!fs.existsSync(folder))
     fs.mkdirSync(folder)
 
 NotionUtil.initialze(process.env.NOTION_TOKEN) // notion option object

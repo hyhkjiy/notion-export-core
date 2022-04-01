@@ -4,7 +4,7 @@ import hypertrie from 'hypertrie'
 class Storage {
 
     static initialze() {
-        Storage.filePath = path.join(process.env.EXPORT_FOLDER, process.env.STORE_FILE)
+        Storage.filePath = path.join(global.repositoryPath, process.env.STORE_FILE)
         Storage.db = hypertrie(Storage.filePath, { valueEncoding: 'json' })
     }
 
