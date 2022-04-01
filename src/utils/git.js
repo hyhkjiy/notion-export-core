@@ -4,16 +4,21 @@ import {
 
 
 class GitUtils {
+    /**
+     * 
+     * @param {*} path Repository path including repository name
+     */
     constructor(path) {
         this.path = path
     }
 
-    async clone(url, dirName) {
+    async clone(url) {
         const options = {
             env: {
                 GIT_HTTP_USER_AGENT: 'dugite/2.12.0'
             }
         }
+        let dirName = this.path.split('/').pop()
         const result = await GitProcess.exec(
             ['clone', url, dirName, '--progress'],
             this.path,
@@ -63,6 +68,19 @@ class GitUtils {
             console.log(result.stderr)
         } else {
             console.log('Commit completed')
+        }
+    }
+
+    async push() {
+        const result = await GitProcess.exec(
+            ['push'],
+            this.path
+        )
+        if (result.exitCode !== 0) {
+            console.log(`Unable to push, exit code ${result.exitCode}`)
+            console.log(result.stderr)
+        } else {
+            console.log('Push completed')
         }
     }
 }
