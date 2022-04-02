@@ -1,8 +1,14 @@
 {
-    "main": "main.js",
-    "dependencies": {
-        "@notionhq/client": "^1.0.4",
-        "hypertrie": "^5.1.3",
-        "dugite": "^1.104.0"
-    }
+  "name": "notion-export-core",
+  "dependencies": {
+    "@notionhq/client": "^1.0.4",
+    "dotenv": "^16.0.0",
+    "dugite": "^1.104.0",
+    "hypertrie": "^5.1.3",
+    "request": "^2.88.2"
+  },
+  "devDependencies": {
+    "dotenv": "^8.2.0"
+  },
+  "type": "module"
 }

@@ -82,11 +82,11 @@ class Dumper {
                 break
             case 'heading_3':
                 break
-            case 'bulleted_list_item': // 无序列表项
+            case 'bulleted_list_item':
                 break
-            case 'numbered_list_item': // 有序列表项
+            case 'numbered_list_item':
                 break
-            case 'to_do': // to do列表
+            case 'to_do':
                 break
             case 'toggle':
                 break

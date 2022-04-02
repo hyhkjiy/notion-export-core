@@ -18,15 +18,18 @@ class GitUtils {
                 GIT_HTTP_USER_AGENT: 'dugite/2.12.0'
             }
         }
-        let dirName = this.path.split('/').pop()
+        let pathSplits = this.path.split('/')
+        let dirName = pathSplits.pop()
+        let clonePath = pathSplits.join('/')
         const result = await GitProcess.exec(
             ['clone', url, dirName, '--progress'],
-            this.path,
+            clonePath,
             options
         )
         if (result.exitCode !== 0) {
             console.log(`Unable to clone, exit code ${result.exitCode}`)
             console.log(result.stderr)
+            throw new Error(`Unable to clone, exit code ${result.exitCode}`)
         } else {
             console.log('Clone completed')
         }
@@ -40,6 +43,7 @@ class GitUtils {
         if (result.exitCode !== 0) {
             console.log(`Unable to pull, exit code ${result.exitCode}`)
             console.log(result.stderr)
+            throw new Error(`Unable to pull, exit code ${result.exitCode}`)
         } else {
             console.log('Pull completed')
         }
@@ -51,8 +55,9 @@ class GitUtils {
             this.path
         )
         if (result.exitCode !== 0) {
-            console.log(`Unable to add, exit code ${result.exitCode}`)
+            console.log(`Unable to add all, exit code ${result.exitCode}`)
             console.log(result.stderr)
+            throw new Error(`Unable to add all, exit code ${result.exitCode}`)
         } else {
             console.log('Add completed')
         }
@@ -66,6 +71,7 @@ class GitUtils {
         if (result.exitCode !== 0) {
             console.log(`Unable to commit, exit code ${result.exitCode}`)
             console.log(result.stderr)
+            throw new Error(`Unable to commit, exit code ${result.exitCode}`)
         } else {
             console.log('Commit completed')
         }
@@ -79,6 +85,7 @@ class GitUtils {
         if (result.exitCode !== 0) {
             console.log(`Unable to push, exit code ${result.exitCode}`)
             console.log(result.stderr)
+            throw new Error(`Unable to push, exit code ${result.exitCode}`)
         } else {
             console.log('Push completed')
         }

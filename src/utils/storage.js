@@ -1,11 +1,15 @@
 import path from 'path'
 import hypertrie from 'hypertrie'
 
+const storageDirName = 'db'
+
 class Storage {
 
-    static initialze() {
-        Storage.filePath = path.join(global.repositoryPath, process.env.STORE_FILE)
-        Storage.db = hypertrie(Storage.filePath, { valueEncoding: 'json' })
+    static initialze(repositoryPath) {
+        Storage.filePath = path.join(repositoryPath, storageDirName)
+        Storage.db = hypertrie(Storage.filePath, {
+            valueEncoding: 'json'
+        })
     }
 
     // will overwrite duplicate ids
