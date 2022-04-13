@@ -47,19 +47,36 @@ class Dumper {
         return path.join('files', fileId, fileName)
     }
 
-    async dumpBlocks(block, parent) {
-        const response = await NotionUtil.blocks.children.list({
-            block_id: block.id,
-            page_size: 0,
-        })
+    async dumpBlocks(block) {
+        let results = []
+        let hasMore = true
+
+        while (hasMore) {
+            const response = await NotionUtil.blocks.children.list({
+                block_id: block.id,
+                page_size: 0,
+            })
+
+            hasMore = response.has_more
+
+            results.push(block)
+
+            if (block.has_children) {
+                block = await NotionUtil.loadBlock(block.childrens[0])
+            } else {
+                block = null
+            }
+        }
 
         // Treat the first `page` or `child_page` of the upper layer as parent
-        parent = block.type == 'child_page' || block.object == 'page' ? block : parent
-        response.results.forEach(b => this.dumpBlock(b, parent))
-        return response.results
+        // parent = block.type == 'child_page' || block.object == 'page' ? block : parent
+        results.forEach(b => this.dumpBlock(b))
+
+
+        return results
     }
 
-    async dumpBlock(block, parent) {
+    async dumpBlock(block) {
         let block_key = (block.object == 'page' ? 'p/' : 'b/') + block.id
 
         let historyBlock = await Storage.get(block_key)
@@ -67,7 +84,7 @@ class Dumper {
             return
 
         if (block.has_children || block.object == 'page') {
-            let results = await this.dumpBlocks(block, parent)
+            let results = await this.dumpBlocks(block)
             block.childrens = results.map(b => {
                 return b.id
             })
