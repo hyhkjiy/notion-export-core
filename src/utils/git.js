@@ -10,6 +10,7 @@ class GitUtils {
      */
     constructor(path) {
         this.path = path
+        this.exec = (args, options) => GitProcess.exec(args, this.path, options)
     }
 
     async clone(url) {

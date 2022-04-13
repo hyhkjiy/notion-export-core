@@ -7,7 +7,16 @@
         {
             "type": "pwa-node",
             "request": "launch",
-            "name": "Launch Program",
+            "name": "export",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "program": "${workspaceFolder}/examples/export.js",
+        },
+        {
+            "type": "pwa-node",
+            "request": "launch",
+            "name": "dump",
             "skipFiles": [
                 "<node_internals>/**"
             ],
