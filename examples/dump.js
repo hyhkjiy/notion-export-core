@@ -17,17 +17,18 @@ const repositoryPath = path.join(folder, repositoryName)
 NotionUtil.initialze(process.env.NOTION_TOKEN) // notion option object
 
 const git = new Git(repositoryPath)
-
-let res = await git.exec(['status']);
-if (!res.stdout.includes('nothing to commit')) {
-    console.log(res.stdout)
-    console.log('git status is not clean, please commit all changes')
-    process.exit(1)
-}
+let gitResult
 
 if (!fs.existsSync(repositoryPath)) {
     await git.clone(gitRepository)
 } else {
+    gitResult = await git.exec(['status']);
+    if (!gitResult.stdout.includes('nothing to commit')) {
+        console.error(gitResult.stdout)
+        console.error('git status is not clean, please commit all changes')
+        process.exit(1)
+    }
+
     await git.pull()
 }
 
@@ -39,8 +40,8 @@ for (let page of results) {
     await dumper.dumpBlock(page)
 }
 
-res = await git.exec(['status']);
-if (res.stdout.includes('nothing to commit')) {
+gitResult = await git.exec(['status']);
+if (gitResult.stdout.includes('nothing to commit')) {
     console.log('No changes')
     process.exit(0)
 }

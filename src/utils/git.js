@@ -10,7 +10,20 @@ class GitUtils {
      */
     constructor(path) {
         this.path = path
-        this.exec = (args, options) => GitProcess.exec(args, this.path, options)
+        this.exec = (args, options) => {
+            options = {
+                ...{
+                    env: {
+                        GIT_AUTHOR_NAME: 'NotionExportRobot',
+                        GIT_AUTHOR_EMAIL: 'notion-robot@gmail.com',
+                        GIT_COMMITTER_NAME: 'NotionExportRobot',
+                        GIT_COMMITTER_EMAIL: 'notion-robot@gmail.com',
+                    }
+                }, ...options
+            }
+
+            return GitProcess.exec(args, this.path, options)
+        }
     }
 
     async clone(url) {
@@ -22,7 +35,7 @@ class GitUtils {
         let pathSplits = this.path.split('/')
         let dirName = pathSplits.pop()
         let clonePath = pathSplits.join('/')
-        const result = await GitProcess.exec(
+        const result = await this(
             ['clone', url, dirName, '--progress'],
             clonePath,
             options
@@ -37,9 +50,8 @@ class GitUtils {
     }
 
     async pull() {
-        const result = await GitProcess.exec(
-            ['pull'],
-            this.path
+        const result = await this.exec(
+            ['pull']
         )
         if (result.exitCode !== 0) {
             console.log(`Unable to pull, exit code ${result.exitCode}`)
@@ -51,9 +63,8 @@ class GitUtils {
     }
 
     async addAll() {
-        const result = await GitProcess.exec(
-            ['add', '--all'],
-            this.path
+        const result = await this.exec(
+            ['add', '--all']
         )
         if (result.exitCode !== 0) {
             console.log(`Unable to add all, exit code ${result.exitCode}`)
@@ -65,9 +76,8 @@ class GitUtils {
     }
 
     async commit(message) {
-        const result = await GitProcess.exec(
+        const result = await this.exec(
             ['commit', '-m', message],
-            this.path
         )
         if (result.exitCode !== 0) {
             console.log(`Unable to commit, exit code ${result.exitCode}`)
@@ -79,9 +89,8 @@ class GitUtils {
     }
 
     async push() {
-        const result = await GitProcess.exec(
-            ['push'],
-            this.path
+        const result = await this.exec(
+            ['push']
         )
         if (result.exitCode !== 0) {
             console.log(`Unable to push, exit code ${result.exitCode}`)
